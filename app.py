@@ -130,7 +130,7 @@ def delete(id):
         db.session.commit()
         return redirect('/')
     except:
-        return 'There was a problem deleting the task'
+        return 'There was a problem deleting the post'
 
 
 if __name__ == "__main__":
