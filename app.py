@@ -67,7 +67,8 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
+
 
 @app.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
@@ -76,50 +77,48 @@ def sign_up():
         first_name = request.form.get('first_name')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
-        
+
         user = User.query.filter_by(email=email).first()
-        
         if user:
             flash('Email already exists.', category='error')
         elif len(email) < 4:
-            flash('Email must be greater than 4 charaters', category='error')
+            flash('Email must be greater than 3 characters.', category='error')
         elif len(first_name) < 2:
-            flash('First name must be greater than 1 charaters', category='error')
+            flash('First name must be greater than 1 character.', category='error')
         elif password1 != password2:
-            flash('Passwords don\'t match', category='error')
+            flash('Passwords don\'t match.', category='error')
         elif len(password1) < 7:
-            flash('Password must be greater than 6 charaters', category='error')
+            flash('Password must be at least 7 characters.', category='error')
         else:
-            new_user = User(email=email, first_name=first_name, password=generate_password_hash(password1, method='sha256'))
+            new_user = User(email=email, first_name=first_name, password=generate_password_hash(
+                password1, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
-            flash('Account Created!', category='success')
-            login_user(user, remember=True)
+            login_user(new_user, remember=True)
+            flash('Account created!', category='success')
             return redirect(url_for('home'))
-    return render_template('sign-up.html', user=current_user)
+
+    return render_template("sign-up.html", user=current_user)
+
 
 
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-        post = request.form.get('post')
-
-        if len(post) < 1:
-            flash('Enter content!', category='error')
-        else:
-            new_post = Post(data=post, user_id=current_user.id)
+        post_data = request.form['post']
+        new_post = Post(data=post_data, user_id=current_user.id)
+        try:
             db.session.add(new_post)
             db.session.commit()
             flash('Post created!', category='success')
-
-    return render_template("home.html", user=current_user)
-@app.route('/about')
-def about():
-    return render_template('about.html', user=current_user)
-@app.route('/contact')
-def contact():
-    return render_template('contact.html', user=current_user)
+            return redirect('/')
+        except:
+            return 'There was an issue'
+    else:
+        posts = Post.query.order_by(Post.date).all()
+        users = User.query.order_by(User.id).all()
+        return render_template('home.html', posts=posts, users=users, user=current_user)
 
 
 @app.route('/delete/<int:id>')
@@ -131,6 +130,28 @@ def delete(id):
         return redirect('/')
     except:
         return 'There was a problem deleting the post'
+    
+@app.route('/edit-post/<int:id>', methods=['GET','POST'])
+def update(id):
+    post = Post.query.get_or_404(id)
+    if request.method == 'POST':
+        post.data = request.form['data']
+        
+        try:
+            db.session.commit()
+            return redirect('/')
+        except:
+            return 'An error occured'
+    else:
+        return render_template('edit-post.html', user=current_user, post=post)
+
+@app.route('/about')
+def about():
+    return render_template('about.html', user=current_user)
+@app.route('/contact')
+def contact():
+    return render_template('contact.html', user=current_user)
+
 
 
 if __name__ == "__main__":

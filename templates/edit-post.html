@@ -8,9 +8,9 @@
 <div class="contnet">
     <h1>Edit post</h1>
 
-    <form action="/update/{{task.id}}" method='POST'>
-        <input type="text" name="content" id="content", value={{task.content}}>
-        <input type="submit" value="Update">
+    <form method="POST" style="display: flex;">
+        <textarea name="post" id="post" class="form-control" style="width: 96%; min-height: 25px; margin-right:5px;"></textarea>
+        <button type="submit" class="btn btn-primary">Update</button>
     </form>
 </div>
 {% endblock %}

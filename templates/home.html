@@ -7,26 +7,33 @@
 {% block body %}
 <div class="container">
     <br/>
+    {% if user.is_authenticated %}
     <form method="POST" style="display: flex;">
         <textarea name="post" id="post" class="form-control" style="width: 96%; min-height: 25px; margin-right:5px;"></textarea>
         <button type="submit" class="btn btn-primary">Post</button>
     </form>
+    {% endif %}
     <h1>Posts</h1>
-    <div class="container">
-        {% for post in user.posts %}
-            <div class="card" style="display: flex; flex-direction: row;">
-                {{ post.date}}| {{ user.first_name }}
+    <div class="container" style="display: flex; flex-direction: column; margin-bottom: 5px;">
+        
+        {% for post in posts %}
+            <div class="card">
+                {{ post.date}} | {{ post.user_id }}
                 <div class="card-body">
                     {{ post.data }}
                 </div>
                 
+                {% if user.is_authenticated %}
                 <div style="padding: 5px;">
                     <a href="/delete/{{ post.id }}">
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                        </button>
+                        Delete
+                    </a> | 
+                    <a href="/edit-post/{{ post.id }}">
+                        Edit
                     </a>
                 </div>
             </div>
+            {% endif %}
             <br/>
         {% endfor %}
     </div>
